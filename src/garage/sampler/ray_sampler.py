@@ -148,7 +148,7 @@ class RaySampler(Sampler):
                 worker.update.remote(param_ids[worker_id], env_ids[worker_id]))
         return updating_workers
 
-    def obtain_samples(self, itr, num_samples, agent_update, env_update=None):
+    def obtain_samples(self, itr, num_samples, agent_update, env_update=None, render_env=False):
         """Sample the policy for new episodes.
 
         Args:

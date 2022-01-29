@@ -45,6 +45,7 @@ class DefaultWorker(Worker):
         self._prev_obs = None
         self._eps_length = 0
         self._episode_infos = defaultdict(list)
+        self._rendered_images = []
         self.worker_init()
 
     def worker_init(self):
@@ -88,16 +89,17 @@ class DefaultWorker(Worker):
         """
         self.env, _ = _apply_env_update(self.env, env_update)
 
-    def start_episode(self):
+    def start_episode(self, render_env=False):
         """Begin a new episode."""
         self._eps_length = 0
+        self._renderer_images = []
         self._prev_obs, episode_info = self.env.reset()
         for k, v in episode_info.items():
             self._episode_infos[k].append(v)
 
         self.agent.reset()
 
-    def step_episode(self):
+    def step_episode(self, render_env=False):
         """Take a single time-step in the current episode.
 
         Returns:
@@ -112,6 +114,10 @@ class DefaultWorker(Worker):
             self._env_steps.append(es)
             for k, v in agent_info.items():
                 self._agent_infos[k].append(v)
+
+            if render_env:
+                self._rendered_images.append(np.swapaxes(self._env.render('human').T, 1, 2))
+
             self._eps_length += 1
 
             if not es.terminal:
@@ -121,7 +127,7 @@ class DefaultWorker(Worker):
         self._last_observations.append(self._prev_obs)
         return True
 
-    def collect_episode(self):
+    def collect_episode(self, render_env=False):
         """Collect the current episode, clearing the internal buffer.
 
         Returns:
@@ -171,19 +177,20 @@ class DefaultWorker(Worker):
                             step_types=np.asarray(step_types, dtype=StepType),
                             env_infos=dict(env_infos),
                             agent_infos=dict(agent_infos),
-                            lengths=np.asarray(lengths, dtype='i'))
+                            lengths=np.asarray(lengths, dtype='i'),
+                            rendered_images=np.array(self._rendered_images))
 
-    def rollout(self):
+    def rollout(self, render_env=False):
         """Sample a single episode of the agent in the environment.
 
         Returns:
             EpisodeBatch: The collected episode.
 
         """
-        self.start_episode()
-        while not self.step_episode():
+        self.start_episode(render_env)
+        while not self.step_episode(render_env):
             pass
-        return self.collect_episode()
+        return self.collect_episode(render_env)
 
     def shutdown(self):
         """Close the worker's environment."""

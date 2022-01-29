@@ -43,7 +43,7 @@ class Worker(abc.ABC):
 
         """
 
-    def rollout(self):
+    def rollout(self, render_env=False):
         """Sample a single episode of the agent in the environment.
 
         Returns:

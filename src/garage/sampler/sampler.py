@@ -70,7 +70,7 @@ class Sampler(abc.ABC):
         """
 
     @abc.abstractmethod
-    def obtain_samples(self, itr, num_samples, agent_update, env_update=None):
+    def obtain_samples(self, itr, num_samples, agent_update, env_update=None, render_env=False):
         """Collect at least a given number transitions :class:`TimeStep`s.
 
         Args:

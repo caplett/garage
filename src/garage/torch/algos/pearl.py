@@ -132,7 +132,8 @@ class PEARL(MetaRLAlgorithm):
             discount=0.99,
             replay_buffer_size=1000000,
             reward_scale=1,
-            update_post_train=1):
+            update_post_train=1,
+            render_env=False):
 
         self._env = env
         self._qf1 = qf
@@ -181,7 +182,8 @@ class PEARL(MetaRLAlgorithm):
         self._evaluator = MetaEvaluator(test_task_sampler=test_env_sampler,
                                         worker_class=PEARLWorker,
                                         worker_args=worker_args,
-                                        n_test_tasks=num_test_tasks)
+                                        n_test_tasks=num_test_tasks,
+                                        render_env=render_env)
 
         encoder_spec = self.get_env_spec(self._single_env, latent_dim,
                                          'encoder')
