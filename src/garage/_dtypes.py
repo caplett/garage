@@ -515,6 +515,8 @@ class EpisodeBatch(TimeStepBatch):
         lengths (numpy.ndarray): An integer numpy array of shape :math:`(N,)`
             containing the length of each episode in this batch. This may be
             used to reconstruct the individual episodes.
+        rendered_images (numpy.ndarray]): A numpy array containing the
+            rendered images of each episode in the batch.
 
     Raises:
         ValueError: If any of the above attributes do not conform to their
@@ -523,6 +525,7 @@ class EpisodeBatch(TimeStepBatch):
     """
     episode_infos_by_episode: np.ndarray
     last_observations: np.ndarray
+    rendered_images: np.array
     lengths: np.ndarray
 
     def __init__(self, env_spec, episode_infos, observations,
@@ -630,7 +633,8 @@ class EpisodeBatch(TimeStepBatch):
             env_infos=env_infos,
             agent_infos=agent_infos,
             step_types=np.concatenate([batch.step_types for batch in batches]),
-            lengths=np.concatenate([batch.lengths for batch in batches]))
+            lengths=np.concatenate([batch.lengths for batch in batches]),
+            rendered_images=[batch.rendered_images for batch in batches])
 
     def _episode_ranges(self):
         """Iterate through start and stop indices for each episode.
@@ -669,7 +673,9 @@ class EpisodeBatch(TimeStepBatch):
                 env_infos=slice_nested_dict(self.env_infos, start, stop),
                 agent_infos=slice_nested_dict(self.agent_infos, start, stop),
                 step_types=self.step_types[start:stop],
-                lengths=np.asarray([self.lengths[i]]))
+                lengths=np.asarray([self.lengths[i]]),
+                rendered_images=self.rendered_images[start:stop]
+            )
             episodes.append(eps)
 
         return episodes
@@ -700,6 +706,8 @@ class EpisodeBatch(TimeStepBatch):
                     transitions in this batch.
                 * episode_infos (dict[str, np.ndarray]): Dictionary of stacked,
                     non-flattened `episode_info` arrays.
+                * rendered_images (np.ndarray): A numpy array of rendered
+                    images showing each episode.
 
         """
         episodes = []
@@ -724,7 +732,9 @@ class EpisodeBatch(TimeStepBatch):
                 {k: v[start:stop]
                  for (k, v) in self.agent_infos.items()},
                 'step_types':
-                self.step_types[start:stop]
+                self.step_types[start:stop],
+                'rendered_images':
+                self.rendered_images[start:stop]
             })
         return episodes
 
@@ -763,6 +773,8 @@ class EpisodeBatch(TimeStepBatch):
                 * step_types (numpy.ndarray): A numpy array of `StepType with
                     shape (T,) containing the time step types for all
                     transitions in this batch.
+                * rendered_images (np.ndarray): A numpy array of
+                    rendered images showing each episode.
         """
         lengths = np.asarray([len(p['rewards']) for p in paths])
         if all(
@@ -797,6 +809,8 @@ class EpisodeBatch(TimeStepBatch):
             stacked_paths['step_types'] = step_types
             del stacked_paths['dones']
 
+        rendered_images = np.concatenate([p['rendered_images'] for p in paths])
+
         return cls(env_spec=env_spec,
                    episode_infos=episode_infos,
                    observations=observations,
@@ -806,7 +820,8 @@ class EpisodeBatch(TimeStepBatch):
                    env_infos=stacked_paths['env_infos'],
                    agent_infos=stacked_paths['agent_infos'],
                    step_types=stacked_paths['step_types'],
-                   lengths=lengths)
+                   lengths=lengths,
+                   rendered_images=rendered_images)
 
     @property
     def next_observations(self):

@@ -92,7 +92,7 @@ class DefaultWorker(Worker):
     def start_episode(self, render_env=False):
         """Begin a new episode."""
         self._eps_length = 0
-        self._renderer_images = []
+        self._rendered_images = []
         self._prev_obs, episode_info = self.env.reset()
         for k, v in episode_info.items():
             self._episode_infos[k].append(v)
@@ -116,7 +116,7 @@ class DefaultWorker(Worker):
                 self._agent_infos[k].append(v)
 
             if render_env:
-                self._rendered_images.append(np.swapaxes(self._env.render('human').T, 1, 2))
+                self._rendered_images.append(np.swapaxes(self.env.render('human').T, 1, 2))
 
             self._eps_length += 1
 
@@ -139,6 +139,8 @@ class DefaultWorker(Worker):
         self._observations = []
         last_observations = self._last_observations
         self._last_observations = []
+        rendered_images = self._rendered_images
+        self._rendered_images = []
 
         actions = []
         rewards = []
@@ -178,10 +180,14 @@ class DefaultWorker(Worker):
                             env_infos=dict(env_infos),
                             agent_infos=dict(agent_infos),
                             lengths=np.asarray(lengths, dtype='i'),
-                            rendered_images=np.array(self._rendered_images))
+                            rendered_images=np.array(rendered_images))
 
     def rollout(self, render_env=False):
         """Sample a single episode of the agent in the environment.
+
+        Args:
+            render_env (bool): Decides whether to render the rolled out sample
+                into a sequence of images.
 
         Returns:
             EpisodeBatch: The collected episode.

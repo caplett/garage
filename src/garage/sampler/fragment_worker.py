@@ -47,7 +47,6 @@ class FragmentWorker(DefaultWorker):
         self._agents = [None] * n_envs
         self._episode_lengths = [0] * self._n_envs
         self._complete_fragments = []
-        self._rendered_images = []
         # Initialized in start_episode
         self._fragments = None
 
@@ -87,7 +86,6 @@ class FragmentWorker(DefaultWorker):
     def start_episode(self, render_env=False):
         """Resets all agents if the environment was updated."""
         if self._needs_env_reset:
-            self._rendered_images = []
             self._needs_env_reset = False
             self.agent.reset([True] * len(self._envs))
             self._episode_lengths = [0] * len(self._envs)

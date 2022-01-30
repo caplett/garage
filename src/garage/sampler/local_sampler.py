@@ -147,7 +147,8 @@ class LocalSampler(Sampler):
                 `env_update_fn` before sampling episodes. If a list is passed
                 in, it must have length exactly `factory.n_workers`, and will
                 be spread across the workers.
-            render_env (bool): Whether to render the sample as a sequence of images.
+            render_env (bool): Whether to render the rolled out episode as a
+                sequence of images.
 
         Returns:
             EpisodeBatch: The batch of collected episodes.
@@ -158,7 +159,7 @@ class LocalSampler(Sampler):
         completed_samples = 0
         while True:
             for worker in self._workers:
-                batch = worker.rollout(render_env)
+                batch = worker.rollout(render_env=render_env)
                 completed_samples += len(batch.actions)
                 batches.append(batch)
                 if completed_samples >= num_samples:

@@ -85,6 +85,8 @@ class Sampler(abc.ABC):
                 `env_update_fn` before sampling episodes. If a list is passed
                 in, it must have length exactly `factory.n_workers`, and will
                 be spread across the workers.
+            render_env (bool): Decides whether the rolled out episodes should
+                be rendered as images.
 
         Returns:
             EpisodeBatch: The batch of collected episodes.
