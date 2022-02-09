@@ -70,7 +70,7 @@ class Sampler(abc.ABC):
         """
 
     @abc.abstractmethod
-    def obtain_samples(self, itr, num_samples, agent_update, env_update=None):
+    def obtain_samples(self, itr, num_samples, agent_update, env_update=None, render_env=False):
         """Collect at least a given number transitions :class:`TimeStep`s.
 
         Args:
@@ -85,6 +85,8 @@ class Sampler(abc.ABC):
                 `env_update_fn` before sampling episodes. If a list is passed
                 in, it must have length exactly `factory.n_workers`, and will
                 be spread across the workers.
+            render_env (bool): Decides whether the rolled out episodes should
+                be rendered as images.
 
         Returns:
             EpisodeBatch: The batch of collected episodes.

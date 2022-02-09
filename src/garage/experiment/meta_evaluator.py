@@ -2,7 +2,7 @@
 
 from dowel import logger, tabular
 
-from garage import EpisodeBatch, log_multitask_performance
+from garage import EpisodeBatch, log_multitask_performance, log_multitask_video
 from garage.experiment.deterministic import get_seed
 from garage.sampler import DefaultWorker, LocalSampler, WorkerFactory
 
@@ -46,7 +46,8 @@ class MetaEvaluator:
                  prefix='MetaTest',
                  test_task_names=None,
                  worker_class=DefaultWorker,
-                 worker_args=None):
+                 worker_args=None,
+                 render_env=False):
         self._test_task_sampler = test_task_sampler
         self._worker_class = worker_class
         if worker_args is None:
@@ -63,6 +64,7 @@ class MetaEvaluator:
         self._test_task_names = test_task_names
         self._test_sampler = None
         self._max_episode_length = None
+        self._render_env = render_env
 
     def evaluate(self, algo, test_episodes_per_task=None):
         """Evaluate the Meta-RL algorithm on the test tasks.
@@ -99,7 +101,8 @@ class MetaEvaluator:
             adapted_eps = self._test_sampler.obtain_samples(
                 self._eval_itr,
                 test_episodes_per_task * self._max_episode_length,
-                adapted_policy)
+                adapted_policy,
+                render_env=self._render_env)
             adapted_episodes.append(adapted_eps)
         logger.log('Finished meta-testing...')
 
@@ -114,4 +117,15 @@ class MetaEvaluator:
                 EpisodeBatch.concatenate(*adapted_episodes),
                 getattr(algo, 'discount', 1.0),
                 name_map=name_map)
+
+        if self._render_env:
+            for eps in EpisodeBatch.concatenate(*adapted_episodes).to_list():
+                task_name = '__unnamed_task__' 
+                if 'task_name' in eps.env_infos:
+                    task_name = eps.env_infos['task_name'][0]
+                elif 'task_id' in eps.env_infos:
+                    task_id = eps.env_infos['task_id'][0]
+                    task_name = name_map.get(task_id, 'Task #{}'.format(task_id))
+                log_multitask_video(eps, task_name)
+
         self._eval_itr += 1

@@ -148,7 +148,7 @@ class RaySampler(Sampler):
                 worker.update.remote(param_ids[worker_id], env_ids[worker_id]))
         return updating_workers
 
-    def obtain_samples(self, itr, num_samples, agent_update, env_update=None):
+    def obtain_samples(self, itr, num_samples, agent_update, env_update=None, render_env=False):
         """Sample the policy for new episodes.
 
         Args:
@@ -162,6 +162,8 @@ class RaySampler(Sampler):
                 `env_update_fn` before sampling episodes. If a list is passed
                 in, it must have length exactly `factory.n_workers`, and will
                 be spread across the workers.
+            render_env (bool): Decides whether the rolled out episode should
+                be rendered as images. NOT USED YET!
 
         Returns:
             EpisodeBatch: Batch of gathered episodes.
@@ -357,7 +359,7 @@ class SamplerWorker:
         self.inner_worker.update_env(env_update)
         return self.worker_id
 
-    def rollout(self):
+    def rollout(self, render_env=False):
         """Sample one episode of the agent in the environment.
 
         Returns:
