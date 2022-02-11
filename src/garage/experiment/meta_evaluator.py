@@ -120,11 +120,12 @@ class MetaEvaluator:
 
         if self._render_env:
             for eps in EpisodeBatch.concatenate(*adapted_episodes).to_list():
+                env_infos = eps['env_infos']
                 task_name = '__unnamed_task__' 
-                if 'task_name' in eps.env_infos:
-                    task_name = eps.env_infos['task_name'][0]
-                elif 'task_id' in eps.env_infos:
-                    task_id = eps.env_infos['task_id'][0]
+                if 'task_name' in env_infos:
+                    task_name = env_infos['task_name'][0]
+                elif 'task_id' in env_infos:
+                    task_id = env_infos['task_id'][0]
                     task_name = name_map.get(task_id, 'Task #{}'.format(task_id))
                 log_multitask_video(eps, task_name)
 
