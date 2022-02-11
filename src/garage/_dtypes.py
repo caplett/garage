@@ -525,12 +525,12 @@ class EpisodeBatch(TimeStepBatch):
     """
     episode_infos_by_episode: np.ndarray
     last_observations: np.ndarray
-    rendered_images: np.array
+    rendered_images: np.ndarray
     lengths: np.ndarray
 
     def __init__(self, env_spec, episode_infos, observations,
                  last_observations, actions, rewards, env_infos, agent_infos,
-                 step_types, lengths, rendered_images = []):  # noqa: D102
+                 step_types, lengths, rendered_images = np.asarray([])):  # noqa: D102
         # lengths
         if len(lengths.shape) != 1:
             raise ValueError(
@@ -634,7 +634,8 @@ class EpisodeBatch(TimeStepBatch):
             agent_infos=agent_infos,
             step_types=np.concatenate([batch.step_types for batch in batches]),
             lengths=np.concatenate([batch.lengths for batch in batches]),
-            rendered_images=[batch.rendered_images for batch in batches])
+            rendered_images=np.concatenate([batch.rendered_images for batch in batches])
+        )
 
     def _episode_ranges(self):
         """Iterate through start and stop indices for each episode.

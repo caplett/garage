@@ -196,7 +196,7 @@ class RaySampler(Sampler):
                 while idle_worker_ids:
                     idle_worker_id = idle_worker_ids.pop()
                     worker = self._all_workers[idle_worker_id]
-                    active_workers.append(worker.rollout.remote())
+                    active_workers.append(worker.rollout.remote(render_env=render_env))
 
                 # check which workers are done/not done collecting a sample
                 # if any are done, send them to process the collected
@@ -220,7 +220,8 @@ class RaySampler(Sampler):
     def obtain_exact_episodes(self,
                               n_eps_per_worker,
                               agent_update,
-                              env_update=None):
+                              env_update=None,
+                              render_env=False):
         """Sample an exact number of episodes per worker.
 
         Args:
@@ -234,6 +235,8 @@ class RaySampler(Sampler):
                 `env_update_fn` before sampling episodes. If a list is passed
                 in, it must have length exactly `factory.n_workers`, and will
                 be spread across the workers.
+            render_env (bool): Whether to render the rolled out episode as a
+                sequence of images.
 
         Returns:
             EpisodeBatch: Batch of gathered episodes. Always in worker
@@ -270,7 +273,7 @@ class RaySampler(Sampler):
                 while idle_worker_ids:
                     idle_worker_id = idle_worker_ids.pop()
                     worker = self._all_workers[idle_worker_id]
-                    active_workers.append(worker.rollout.remote())
+                    active_workers.append(worker.rollout.remote(render_env=render_env))
 
                 # check which workers are done/not done collecting a sample
                 # if any are done, send them to process the collected episode
@@ -362,11 +365,15 @@ class SamplerWorker:
     def rollout(self, render_env=False):
         """Sample one episode of the agent in the environment.
 
+        Args:
+            render_env (bool): Whether to render the rolled out episode as a
+                sequence of images.
+
         Returns:
             tuple[int, EpisodeBatch]: Worker ID and batch of samples.
 
         """
-        return (self.worker_id, self.inner_worker.rollout())
+        return (self.worker_id, self.inner_worker.rollout(render_env=render_env))
 
     def shutdown(self):
         """Shuts down the worker."""

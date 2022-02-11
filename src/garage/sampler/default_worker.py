@@ -116,7 +116,7 @@ class DefaultWorker(Worker):
                 self._agent_infos[k].append(v)
 
             if render_env:
-                self._rendered_images.append(np.swapaxes(self.env.render('human').T, 1, 2))
+                self._rendered_images.append(np.swapaxes(self.env.render('rgb_array').T, 1, 2))
 
             self._eps_length += 1
 
