@@ -9,6 +9,9 @@ import numpy as np
 from garage import EpisodeBatch, StepType
 from garage.np import discount_cumsum, stack_tensor_dict_list
 
+import matplotlib.pyplot as plt
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
+
 
 class _Default:  # pylint: disable=too-few-public-methods
     """A wrapper class to represent default arguments.
@@ -221,7 +224,10 @@ def log_multitask_performance(itr, batch, discount, name_map=None):
 
     """
     eps_by_name = defaultdict(list)
-    for eps in batch.split():
+    zs_by_name = defaultdict(list)
+    if isinstance(batch, EpisodeBatch):
+        batch = batch.split()
+    for eps in batch:
         task_name = '__unnamed_task__'
         if 'task_name' in eps.env_infos:
             task_name = eps.env_infos['task_name'][0]
@@ -230,6 +236,8 @@ def log_multitask_performance(itr, batch, discount, name_map=None):
             task_id = eps.env_infos['task_id'][0]
             task_name = name_map.get(task_id, 'Task #{}'.format(task_id))
         eps_by_name[task_name].append(eps)
+        if hasattr(eps, "z"):
+            zs_by_name[task_name].append(eps.z)
     if name_map is None:
         task_names = eps_by_name.keys()
     else:
@@ -238,7 +246,7 @@ def log_multitask_performance(itr, batch, discount, name_map=None):
         if task_name in eps_by_name:
             episodes = eps_by_name[task_name]
             log_performance(itr,
-                            EpisodeBatch.concatenate(*episodes),
+                            episodes,
                             discount,
                             prefix=task_name)
         else:
@@ -253,7 +261,47 @@ def log_multitask_performance(itr, batch, discount, name_map=None):
                 tabular.record('TerminationRate', np.nan)
                 tabular.record('SuccessRate', np.nan)
 
+    if len(zs_by_name) != 0:
+        try:
+            plot = get_fisher_plot(zs_by_name)
+
+            with tabular.prefix('Average/'):
+                tabular.record('Latent Space', plot)
+        except:
+            print("Fisher Plot did not work")
+
+
+
     return log_performance(itr, batch, discount=discount, prefix='Average')
+
+def get_fisher_plot(zs):
+    X = []
+    y = []
+    for key, value in zs.items():
+        for vector in value:
+            X.append(vector)
+            y.append(key)
+
+    X = np.array(X)
+    y = np.array(y)
+
+    lda = LinearDiscriminantAnalysis(n_components=2)
+    lda.fit(X, y)
+
+    uniques, categorial = np.unique(y, return_inverse=True)
+
+    low_X = lda.transform(X)
+
+    fig, ax = plt.subplots()
+
+    for c in np.unique(categorial):
+        low_X_class = low_X[categorial==c]
+        ax.scatter(low_X_class[:, 0], low_X_class[:, 1], label=uniques[c])
+
+    ax.legend()
+    ax.grid(True)
+
+    return fig
 
 
 def log_performance(itr, batch, discount, prefix='Evaluation'):
@@ -273,7 +321,7 @@ def log_performance(itr, batch, discount, prefix='Evaluation'):
     undiscounted_returns = []
     termination = []
     success = []
-    for eps in batch.split():
+    for eps in batch:
         returns.append(discount_cumsum(eps.rewards, discount))
         undiscounted_returns.append(sum(eps.rewards))
         termination.append(

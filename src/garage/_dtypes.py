@@ -181,7 +181,7 @@ class TimeStep:
                    step_type=env_step.step_type)
 
 
-@dataclass(frozen=True)
+@dataclass()
 class TimeStepBatch:
     # pylint: disable=missing-param-doc, missing-type-doc
     """A tuple representing a batch of TimeSteps.
@@ -451,7 +451,7 @@ class TimeStepBatch:
         return TimeStepBatch.concatenate(*ts_batches)
 
 
-@dataclass(frozen=True, init=False)
+@dataclass(init=False)
 class EpisodeBatch(TimeStepBatch):
     # pylint: disable=missing-return-doc, missing-return-type-doc, missing-param-doc, missing-type-doc  # noqa: E501
     r"""A tuple representing a batch of whole episodes.
