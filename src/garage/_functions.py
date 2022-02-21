@@ -196,9 +196,15 @@ def obtain_evaluation_episodes(policy,
 
 
 def log_multitask_video(eps, task_name):
+    # pdb.set_trace()
     video = eps["rendered_images"]
-    with tabular.prefix(task_name + '/'):
-        tabular.record('Video', video)
+    if (type(video) is list) and len(video) == 0: 
+        return
+    elif (type(video) is np.ndarray) and video.size == 0: 
+        return
+    else:
+        with tabular.prefix(task_name + '/'):
+            tabular.record('Video', video)
 
 def log_multitask_performance(itr, batch, discount, name_map=None):
     r"""Log performance of episodes from multiple tasks.

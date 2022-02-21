@@ -8,7 +8,6 @@ from garage.experiment import deterministic
 from garage.sampler import _apply_env_update
 from garage.sampler.worker import Worker
 
-
 class DefaultWorker(Worker):
     """Initialize a worker.
 
@@ -116,7 +115,8 @@ class DefaultWorker(Worker):
                 self._agent_infos[k].append(v)
 
             if render_env:
-                self._rendered_images.append(np.swapaxes(self.env.render('human').T, 1, 2))
+                # self._rendered_images.append(np.swapaxes(self.env.render('human').T, 1, 2))
+                pass
 
             self._eps_length += 1
 
