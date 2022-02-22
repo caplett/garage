@@ -89,7 +89,12 @@ class DefaultWorker(Worker):
         self.env, _ = _apply_env_update(self.env, env_update)
 
     def start_episode(self, render_env=False):
-        """Begin a new episode."""
+        """Begin a new episode.
+
+        Args:
+            render_env (bool): Decides whether to render the rolled out sample
+                into a sequence of images.
+        """
         self._eps_length = 0
         self._rendered_images = []
         self._prev_obs, episode_info = self.env.reset()
@@ -100,6 +105,10 @@ class DefaultWorker(Worker):
 
     def step_episode(self, render_env=False):
         """Take a single time-step in the current episode.
+
+        Args:
+            render_env (bool): Decides whether to render the rolled out sample
+                into a sequence of images.
 
         Returns:
             bool: True iff the episode is done, either due to the environment
@@ -114,10 +123,6 @@ class DefaultWorker(Worker):
             for k, v in agent_info.items():
                 self._agent_infos[k].append(v)
 
-            if render_env:
-                # self._rendered_images.append(np.swapaxes(self.env.render('human').T, 1, 2))
-                pass
-
             self._eps_length += 1
 
             if not es.terminal:
@@ -129,6 +134,10 @@ class DefaultWorker(Worker):
 
     def collect_episode(self, render_env=False):
         """Collect the current episode, clearing the internal buffer.
+
+        Args:
+            render_env (bool): Decides whether to render the rolled out sample
+                into a sequence of images.
 
         Returns:
             EpisodeBatch: A batch of the episodes completed since the last call

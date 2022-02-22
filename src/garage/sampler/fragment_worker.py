@@ -84,7 +84,13 @@ class FragmentWorker(DefaultWorker):
                 self._needs_env_reset |= up
 
     def start_episode(self, render_env=False):
-        """Resets all agents if the environment was updated."""
+        """Resets all agents if the environment was updated.
+
+        Args:
+            render_env (bool): Whether the worker should render frames to
+                rendered_frames. NOT IMPLEMENTED YET. See the PEARLWorker
+                for reference.
+        """
         if self._needs_env_reset:
             self._needs_env_reset = False
             self.agent.reset([True] * len(self._envs))
@@ -93,6 +99,11 @@ class FragmentWorker(DefaultWorker):
 
     def step_episode(self, render_env=False):
         """Take a single time-step in the current episode.
+
+        Args:
+            render_env (bool): Whether the worker should render frames to
+                rendered_frames. NOT IMPLEMENTED YET. See the PEARLWorker
+                for reference.
 
         Returns:
             bool: True iff at least one of the episodes was completed.
@@ -121,6 +132,11 @@ class FragmentWorker(DefaultWorker):
     def collect_episode(self, render_env=False):
         """Gather fragments from all in-progress episodes.
 
+        Args:
+            render_env (bool): Whether the worker should render frames to
+                rendered_frames. NOT IMPLEMENTED YET. See the PEARLWorker
+                for reference.
+
         Returns:
             EpisodeBatch: A batch of the episode fragments.
 
@@ -139,6 +155,11 @@ class FragmentWorker(DefaultWorker):
 
     def rollout(self, render_env=False):
         """Sample a single episode of the agent in the environment.
+
+        Args:
+            render_env (bool): Whether the worker should render frames to
+                rendered_frames. NOT IMPLEMENTED YET. See the PEARLWorker
+                for reference.
 
         Returns:
             EpisodeBatch: The collected episode.

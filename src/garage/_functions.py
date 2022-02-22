@@ -196,7 +196,6 @@ def obtain_evaluation_episodes(policy,
 
 
 def log_multitask_video(eps, task_name):
-    # pdb.set_trace()
     video = eps["rendered_images"]
     if (type(video) is list) and len(video) == 0: 
         return
