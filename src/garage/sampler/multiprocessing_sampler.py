@@ -161,7 +161,7 @@ class MultiprocessingSampler(Sampler):
                 except queue.Full:
                     pass
 
-    def obtain_samples(self, itr, num_samples, agent_update, env_update=None):
+    def obtain_samples(self, itr, num_samples, agent_update, env_update=None, render_env=False):
         """Collect at least a given number transitions (timesteps).
 
         Args:
@@ -177,6 +177,8 @@ class MultiprocessingSampler(Sampler):
                 `env_update_fn` before sampling episodes. If a list is passed
                 in, it must have length exactly `factory.n_workers`, and will
                 be spread across the workers.
+            render_env (bool): Whether to render the rolled out episode as a
+                sequence of images. NOT USED YET, CHECK LOCALSAMPLER FOR REFERENCE.
 
         Returns:
             EpisodeBatch: The batch of collected episodes.
@@ -232,7 +234,8 @@ class MultiprocessingSampler(Sampler):
     def obtain_exact_episodes(self,
                               n_eps_per_worker,
                               agent_update,
-                              env_update=None):
+                              env_update=None,
+                              render_env=False):
         """Sample an exact number of episodes per worker.
 
         Args:
@@ -246,6 +249,8 @@ class MultiprocessingSampler(Sampler):
                 `env_update_fn` before sampling episodes. If a list is passed
                 in, it must have length exactly `factory.n_workers`, and will
                 be spread across the workers.
+            render_env (bool): Whether to render the rolled out episode as a
+                sequence of images. NOT USED YET, CHECK LOCALSAMPLER FOR REFERENCE.
 
         Returns:
             EpisodeBatch: Batch of gathered episodes. Always in worker

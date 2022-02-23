@@ -5,6 +5,7 @@ from garage._dtypes import EpisodeBatch, TimeStep, TimeStepBatch
 from garage._environment import (Environment, EnvSpec, EnvStep, InOutSpec,
                                  StepType, Wrapper)
 from garage._functions import (_Default, log_multitask_performance,
+                               log_multitask_video,
                                log_performance, make_optimizer,
                                obtain_evaluation_episodes, rollout)
 from garage.experiment.experiment import wrap_experiment
@@ -19,6 +20,7 @@ __all__ = [
     'TimeStep',
     'EpisodeBatch',
     'log_multitask_performance',
+    'log_multitask_video',
     'log_performance',
     'InOutSpec',
     'TimeStepBatch',

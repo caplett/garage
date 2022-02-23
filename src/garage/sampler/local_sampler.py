@@ -131,7 +131,7 @@ class LocalSampler(Sampler):
             worker.update_agent(agent_up)
             worker.update_env(env_up)
 
-    def obtain_samples(self, itr, num_samples, agent_update, env_update=None):
+    def obtain_samples(self, itr, num_samples, agent_update, env_update=None, render_env=False):
         """Collect at least a given number transitions (timesteps).
 
         Args:
@@ -147,6 +147,8 @@ class LocalSampler(Sampler):
                 `env_update_fn` before sampling episodes. If a list is passed
                 in, it must have length exactly `factory.n_workers`, and will
                 be spread across the workers.
+            render_env (bool): Whether to render the rolled out episode as a
+                sequence of images.
 
         Returns:
             EpisodeBatch: The batch of collected episodes.
@@ -157,7 +159,7 @@ class LocalSampler(Sampler):
         completed_samples = 0
         while True:
             for worker in self._workers:
-                batch = worker.rollout()
+                batch = worker.rollout(render_env=render_env)
                 completed_samples += len(batch.actions)
                 batches.append(batch)
                 if completed_samples >= num_samples:
@@ -168,7 +170,8 @@ class LocalSampler(Sampler):
     def obtain_exact_episodes(self,
                               n_eps_per_worker,
                               agent_update,
-                              env_update=None):
+                              env_update=None,
+                              render_env=False):
         """Sample an exact number of episodes per worker.
 
         Args:
@@ -182,6 +185,8 @@ class LocalSampler(Sampler):
                 `env_update_fn` before samplin episodes. If a list is passed
                 in, it must have length exactly `factory.n_workers`, and will
                 be spread across the workers.
+            render_env (bool): Whether to render the rolled out episode as a
+                sequence of images.
 
         Returns:
             EpisodeBatch: Batch of gathered episodes. Always in worker
@@ -193,7 +198,7 @@ class LocalSampler(Sampler):
         batches = []
         for worker in self._workers:
             for _ in range(n_eps_per_worker):
-                batch = worker.rollout()
+                batch = worker.rollout(render_env=render_env)
                 batches.append(batch)
         samples = EpisodeBatch.concatenate(*batches)
         self.total_env_steps += sum(samples.lengths)
