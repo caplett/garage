@@ -104,8 +104,14 @@ class VecWorker(DefaultWorker):
                     self._envs[env_index], env_up)
                 self._needs_env_reset |= up
 
-    def start_episode(self):
-        """Begin a new episode."""
+    def start_episode(self, render_env=False):
+        """Begin a new episode.
+
+        Args:
+            render_env (bool): Whether the worker should render frames to
+                rendered_frames. NOT IMPLEMENTED YET. See the PEARLWorker
+                for reference.
+        """
         if self._needs_agent_reset or self._needs_env_reset:
             n = len(self._envs)
             self.agent.reset([True] * n)
@@ -173,8 +179,13 @@ class VecWorker(DefaultWorker):
         self._agent_infos[episode_number] = collections.defaultdict(list)
         self._episode_infos[episode_number] = collections.defaultdict(list)
 
-    def step_episode(self):
+    def step_episode(self, render_env=False):
         """Take a single time-step in the current episode.
+
+        Args:
+            render_env (bool): Whether the worker should render frames to
+                rendered_frames. NOT IMPLEMENTED YET. See the PEARLWorker
+                for reference.
 
         Returns:
             bool: True iff at least one of the episodes was completed.
@@ -203,8 +214,13 @@ class VecWorker(DefaultWorker):
             self.agent.reset(completes)
         return finished
 
-    def collect_episode(self):
+    def collect_episode(self, render_env=False):
         """Collect all completed episodes.
+
+        Args:
+            render_env (bool): Whether the worker should render frames to
+                rendered_frames. NOT IMPLEMENTED YET. See the PEARLWorker
+                for reference.
 
         Returns:
             EpisodeBatch: A batch of the episodes completed since the last call

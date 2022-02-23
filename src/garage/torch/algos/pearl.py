@@ -132,7 +132,8 @@ class PEARL(MetaRLAlgorithm):
             discount=0.99,
             replay_buffer_size=1000000,
             reward_scale=1,
-            update_post_train=1):
+            update_post_train=1,
+            render_env=False):
 
         self._env = env
         self._qf1 = qf
@@ -181,7 +182,8 @@ class PEARL(MetaRLAlgorithm):
         self._evaluator = MetaEvaluator(test_task_sampler=test_env_sampler,
                                         worker_class=PEARLWorker,
                                         worker_args=worker_args,
-                                        n_test_tasks=num_test_tasks)
+                                        n_test_tasks=num_test_tasks,
+                                        render_env=render_env)
 
         encoder_spec = self.get_env_spec(self._single_env, latent_dim,
                                          'encoder')
@@ -726,12 +728,13 @@ class PEARLWorker(DefaultWorker):
                          max_episode_length=max_episode_length,
                          worker_number=worker_number)
 
-    def start_episode(self):
+    def start_episode(self, render_env=False):
         """Begin a new episode."""
         self._eps_length = 0
+        self._rendered_images = []
         self._prev_obs, self._episode_info = self.env.reset()
 
-    def step_episode(self):
+    def step_episode(self, render_env=False):
         """Take a single time-step in the current episode.
 
         Returns:
@@ -749,6 +752,10 @@ class PEARLWorker(DefaultWorker):
             self._env_steps.append(es)
             for k, v in agent_info.items():
                 self._agent_infos[k].append(v)
+
+            if render_env:
+                self._rendered_images.append(np.swapaxes(self.env.render('human').T, 1, 2))
+
             self._eps_length += 1
 
             if self._accum_context:
@@ -764,7 +771,7 @@ class PEARLWorker(DefaultWorker):
         self._last_observations.append(self._prev_obs)
         return True
 
-    def rollout(self):
+    def rollout(self, render_env):
         """Sample a single episode of the agent in the environment.
 
         Returns:
@@ -772,7 +779,7 @@ class PEARLWorker(DefaultWorker):
 
         """
         self.agent.sample_from_belief()
-        self.start_episode()
-        while not self.step_episode():
+        self.start_episode(render_env)
+        while not self.step_episode(render_env):
             pass
-        return self.collect_episode()
+        return self.collect_episode(render_env)

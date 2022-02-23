@@ -43,8 +43,12 @@ class Worker(abc.ABC):
 
         """
 
-    def rollout(self):
+    def rollout(self, render_env=False):
         """Sample a single episode of the agent in the environment.
+
+        Args:
+            render_env (bool): Decides whether to render the rolled out sample
+                into a sequence of images.
 
         Returns:
             EpisodeBatch: Batch of sampled episodes. May be truncated if
