@@ -103,6 +103,7 @@ class MetaEvaluator:
                 test_episodes_per_task * self._max_episode_length,
                 adapted_policy,
                 render_env=self._render_env)
+            adapted_eps.z = adapted_policy.z.cpu().detach().numpy()[0]
             adapted_episodes.append(adapted_eps)
         logger.log('Finished meta-testing...')
 
@@ -114,7 +115,7 @@ class MetaEvaluator:
         with tabular.prefix(self._prefix + '/' if self._prefix else ''):
             log_multitask_performance(
                 self._eval_itr,
-                EpisodeBatch.concatenate(*adapted_episodes),
+                adapted_episodes,
                 getattr(algo, 'discount', 1.0),
                 name_map=name_map)
 
