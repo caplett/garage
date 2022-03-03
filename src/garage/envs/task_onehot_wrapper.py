@@ -22,7 +22,7 @@ class TaskOnehotWrapper(Wrapper):
 
     """
 
-    def __init__(self, env, task_index, n_total_tasks):
+    def __init__(self, env, task_index, n_total_tasks, dummy_onehot=False):
         assert 0 <= task_index < n_total_tasks
         super().__init__(env)
         self._task_index = task_index
@@ -31,6 +31,7 @@ class TaskOnehotWrapper(Wrapper):
         env_ub = self._env.observation_space.high
         one_hot_ub = np.ones(self._n_total_tasks)
         one_hot_lb = np.zeros(self._n_total_tasks)
+        self._dummy_onehot = dummy_onehot
 
         self._observation_space = akro.Box(
             np.concatenate([env_lb, one_hot_lb]),
@@ -110,7 +111,10 @@ class TaskOnehotWrapper(Wrapper):
 
         """
         one_hot = np.zeros(self._n_total_tasks)
-        one_hot[self._task_index] = 1.0
+        if self._dummy_onehot:
+            one_hot[0] = 1.0
+        else:
+            one_hot[self._task_index] = 1.0
         return np.concatenate([obs, one_hot])
 
     @classmethod

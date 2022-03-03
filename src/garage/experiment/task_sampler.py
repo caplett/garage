@@ -254,11 +254,12 @@ class MetaWorldTaskSampler(TaskSampler):
 
     """
 
-    def __init__(self, benchmark, kind, wrapper=None, add_env_onehot=False):
+    def __init__(self, benchmark, kind, wrapper=None, add_env_onehot=False, dummy_onehot=False):
         self._benchmark = benchmark
         self._kind = kind
         self._inner_wrapper = wrapper
         self._add_env_onehot = add_env_onehot
+        self._dummy_onehot = dummy_onehot
         if kind == 'train':
             self._classes = benchmark.train_classes
             self._tasks = benchmark.train_tasks
@@ -337,6 +338,7 @@ class MetaWorldTaskSampler(TaskSampler):
         inner_wrapper = self._inner_wrapper
         add_env_onehot = self._add_env_onehot
         task_indices = self._task_indices
+        dummy_onehot = self._dummy_onehot
 
         def wrap(env, task):
             """Wrap an environment in a metaworld benchmark.
@@ -354,7 +356,8 @@ class MetaWorldTaskSampler(TaskSampler):
             if add_env_onehot:
                 env = TaskOnehotWrapper(env,
                                         task_index=task_indices[task.env_name],
-                                        n_total_tasks=len(task_indices))
+                                        n_total_tasks=len(task_indices), 
+                                        dummy_onehot=dummy_onehot)
             if inner_wrapper is not None:
                 env = inner_wrapper(env, task)
             return env
